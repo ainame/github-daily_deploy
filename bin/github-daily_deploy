@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+lib = File.expand_path('../..//lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'github/daily_deploy'
+require 'slop'
+require 'logger'
+
+option = Slop.parse do
+  banner "Usage: git-daily_deploy --root_dir=ROOT_DIR --deploy_branch==DEPLOY_BRANCH"
+  on "--root_dir=", "root dir of repositiory", as: String
+  on "--deploy_branch=", "deploy branch repositiory", as: String
+  on "--repository=", "deploy branch repositiory", as: String
+end
+
+params = option.to_hash
+unless params[:root_dir] && params[:deploy_branch]
+  puts option.banner
+  exit 1
+end
+
+logger = ::Logger.new(STDOUT)
+release_branch = Github::DailyDeploy.create_release_branch(
+  root_dir: params[:root_dir], deploy_branch: params[:deploy_branch], logger: logger
+)
+
+if release_branch
+  logger.info('success create release branch')
+else
+  logger.error('failed create release branch')
+  exit 1
+end
+
+result = Github::DailyDeploy.create_pull_request(
+  release_branch: release_branch,
+  repositiory: params[:repository],
+)
+
+if result
+  logger.info('success create pull request')
+end
