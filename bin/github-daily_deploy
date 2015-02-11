@@ -1,9 +1,12 @@
 #!/usr/bin/env ruby
-lib = File.expand_path('../..//lib', __FILE__)
+lib = File.expand_path('../../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'github/daily_deploy'
 require 'slop'
 require 'logger'
+
+# github-daily_deploy_test token
+ENV['GITHUB_ACCESS_TOKEN'] = '1e264bdabc2dd4ab190981ee12014cfb1b7698ba'
 
 option = Slop.parse do
   banner "Usage: git-daily_deploy --root_dir=ROOT_DIR --deploy_branch==DEPLOY_BRANCH"
@@ -18,22 +21,25 @@ unless params[:root_dir] && params[:deploy_branch]
   exit 1
 end
 
-logger = ::Logger.new(STDOUT)
-release_branch = Github::DailyDeploy.create_release_branch(
-  root_dir: params[:root_dir], deploy_branch: params[:deploy_branch], logger: logger
+deploy = Github::DailyDeploy.new(
+  root_dir: params[:root_dir],
+  repository: params[:repository],
+  logger: ::Logger.new(STDOUT)
 )
+result = deploy.checkout_repository
+exit(1) unless result
 
-if release_branch
-  logger.info('success create release branch')
+result = deploy.create_release_branch(params[:deploy_branch])
+exit(1) unless result
+
+if result
+  deploy.logger.info('success create release branch')
 else
-  logger.error('failed create release branch')
+  deploy.logger.error('failed create release branch')
   exit 1
 end
 
-result = Github::DailyDeploy.create_pull_request(
-  release_branch: release_branch,
-  repositiory: params[:repository],
-)
+result = deploy.create_pull_request(params[:deploy_branch])
 
 if result
   logger.info('success create pull request')
