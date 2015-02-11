@@ -4,6 +4,11 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'github/daily_deploy'
 require 'slop'
 require 'logger'
+require 'dotenv'
+
+unless Dir['./.env'].empty?
+  Dotenv.load
+end
 
 option = Slop.parse do
   banner "Usage: git-daily_deploy --root_dir=ROOT_DIR --deploy_branch==DEPLOY_BRANCH"
