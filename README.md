@@ -1,6 +1,6 @@
 # Github::DailyDeploy
 
-TODO: Write a gem description
+github-daily_deploy is the support tools for github flow team's daily deployment.
 
 ## Installation
 
@@ -20,7 +20,12 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```
+$ github-daily_deploy --root_dir="/home/deploy/" \
+                      --repository="ainame/github-daily_deploy"\
+                      --release_branch="production"\
+                      --title="今日のリリース差分だよ٩(๑❛ᴗ❛๑)۶"
+```
 
 ## Contributing
 
@@ -29,3 +34,8 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## See
+
+* http://d.hatena.ne.jp/naoya/20140502/1399027655
+* http://qiita.com/r7kamura/items/5e7b9c27693bcc4a5a39
