@@ -48,7 +48,20 @@ module Github
       pull_request_title =
         title ? "#{title} - #{pull_request_title_timpstamp}" : default_pull_request_title
       client = Octokit::Client.new(access_token: ENV['GITHUB_ACCESS_TOKEN'])
-      client.create_pull_request(@repository, deploy_branch, @release_branch, pull_request_title, pull_request_body)
+      response = pull_request = client.create_pull_request(@repository, deploy_branch, @release_branch, pull_request_title, default_pull_request_body)
+
+      pull_request_number = response[:number]
+      merged_commits = client.pull_request_commits(@repository, pull_request_number);
+      merged_pull_requests = merged_commits
+        .select{ |com| com[:commit][:message] =~ /Merge/ }
+        .map { |com| com[:commit][:message] }
+        .map { |com| com.match(/\AMerge pull request #(\d*).*$/).captures[0] }
+        .compact
+        .map { |number| client.pull_request(@repository, number) }
+      new_body = merged_pull_requests
+        .map { |pr| "* #{pr[:title]} ##{pr[:number]}" }
+        .join("\n")
+      client.update_pull_request(@repository, pull_request_number, body: new_body)
     end
 
     def default_pull_request_title
@@ -59,7 +72,7 @@ module Github
       "#{@now.strftime("%Y-%m-%d %H:%M:%S")}"
     end
 
-    def pull_request_body
+    def default_pull_request_body
       "TODO"
     end
 
