@@ -21,10 +21,10 @@ Or install it yourself as:
 ## Usage
 
 ```
-$ github-daily_deploy --root_dir="/home/deploy/" \
-                      --repository="ainame/github-daily_deploy"\
-                      --release_branch="production"\
-                      --title="今日のリリース差分だよ٩(๑❛ᴗ❛๑)۶"
+$ GITHUB_ACCESS_TOKEN=XXXXX github-daily_deploy --root_dir="/home/deploy/" \
+                                                --repository="ainame/github-daily_deploy"\
+                                                --release_branch="production"\
+                                                --title="今日のリリース差分だよ٩(๑❛ᴗ❛๑)۶"
 ```
 
 ## Contributing
