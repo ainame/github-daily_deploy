@@ -45,7 +45,7 @@ end
 args = {}
 args[:deploy_branch] = params[:deploy_branch]
 args[:title] = params[:title] if params[:title]
-result = deploy.create_pull_request(args)
+result = deploy.create(args)
 
 if result
   deploy.logger.info('success create pull request')
