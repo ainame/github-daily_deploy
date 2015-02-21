@@ -3,15 +3,7 @@ require "octokit"
 
 module Github
   class DailyDeploy
-    attr_accessor :root_dir, :repository
-
-    def logger
-      @logger
-    end
-
-    def logger=(logger)
-      @logger = logger
-    end
+    attr_accessor :logger, :root_dir, :repository
 
     def initialize(root_dir:, repository:, logger: nil)
       self.logger = logger || ::Logger.new(STDOUT)
@@ -19,6 +11,7 @@ module Github
       @repository = repository
       @now = Time.now
       @release_branch = "release-#{@now.strftime("%Y%m%d%H%M%S")}"
+      @client = Octokit::Client.new(access_token: ENV['GITHUB_ACCESS_TOKEN'])
     end
 
     def create_release_branch(deploy_branch)
@@ -44,24 +37,37 @@ module Github
       end
     end
 
-    def create_pull_request(deploy_branch:, title: nil)
+    def create(deploy_branch:, title: nil)
+      response = create_pull_request(deploy_branch, title)
+      summarize_pull_request(response[:number])
+    end
+
+    def create_pull_request(deploy_branch, title = nil)
       pull_request_title =
         title ? "#{title} - #{pull_request_title_timpstamp}" : default_pull_request_title
-      client = Octokit::Client.new(access_token: ENV['GITHUB_ACCESS_TOKEN'])
-      response = pull_request = client.create_pull_request(@repository, deploy_branch, @release_branch, pull_request_title, default_pull_request_body)
+      @client.create_pull_request(@repository, deploy_branch, @release_branch, pull_request_title, default_pull_request_body)
+    end
 
-      pull_request_number = response[:number]
-      merged_commits = client.pull_request_commits(@repository, pull_request_number);
-      merged_pull_requests = merged_commits
+    def summarize_pull_request(number)
+      merged_commits = @client.pull_request_commits(@repository, number)
+      merged_pull_requests = extract_merged_pull_requests(merged_commits)
+      new_body = summarize_pull_request_body(merged_pull_requests)
+      @client.update_pull_request(@repository, number, body: new_body)
+    end
+
+    def extract_merged_pull_requests(merged_commits)
+      merged_commits
         .select{ |com| com[:commit][:message] =~ /Merge/ }
         .map { |com| com[:commit][:message] }
         .map { |com| com.match(/\AMerge pull request #(\d*).*$/).captures[0] }
         .compact
-        .map { |number| client.pull_request(@repository, number) }
-      new_body = merged_pull_requests
+        .map { |number| @client.pull_request(@repository, number) }
+    end
+
+    def summarize_pull_request_body(merged_pull_requests)
+      merged_pull_requests
         .map { |pr| "* #{pr[:title]} ##{pr[:number]}" }
         .join("\n")
-      client.update_pull_request(@repository, pull_request_number, body: new_body)
     end
 
     def default_pull_request_title
