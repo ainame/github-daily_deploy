@@ -11,7 +11,7 @@ unless Dir['./.env'].empty?
 end
 
 option = Slop.parse do
-  banner "Usage: git-daily_deploy --root_dir=ROOT_DIR --deploy_branch==DEPLOY_BRANCH"
+  banner "Usage: git-daily_deploy --repository=REPOSITORY --root_dir=ROOT_DIR --deploy_branch==DEPLOY_BRANCH [--title=TITLE]"
   on "--root_dir=", "root dir of repositiory", as: String
   on "--deploy_branch=", "deploy branch repositiory", as: String
   on "--repository=", "deploy branch repositiory", as: String
