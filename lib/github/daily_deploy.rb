@@ -57,9 +57,8 @@ module Github
 
     def extract_merged_pull_requests(merged_commits)
       merged_commits
-        .select{ |com| com[:commit][:message] =~ /Merge/ }
         .map { |com| com[:commit][:message] }
-        .map { |com| com.match(/\AMerge pull request #(\d*).*$/).captures[0] }
+        .map { |message| match = message.match(/\AMerge pull request #(\d*).*$/); match ? match.captures[0] : nil }
         .compact
         .map { |number| @client.pull_request(@repository, number) }
     end
