@@ -31,7 +31,7 @@ module Github
           run("git checkout master")
           run("git fetch origin")
           run("git checkout -b #{@release_branch} origin/#{deploy_branch}")
-          run("git merge origin/master")
+          run("git merge origin/master --no-edit")
           run("git push origin #{@release_branch}")
         end
       end
