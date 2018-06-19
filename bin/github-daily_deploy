@@ -29,8 +29,11 @@ deploy = Github::DailyDeploy.new(
   repository: params[:repository],
   logger: ::Logger.new(STDOUT)
 )
-result = deploy.checkout_repository
-exit(1) unless result
+
+unless deploy.is_cloned_repository
+  result = deploy.checkout_repository
+  exit(1) unless result
+end
 
 result = deploy.create_release_branch(params[:deploy_branch])
 exit(1) unless result

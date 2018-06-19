@@ -25,6 +25,17 @@ module Github
       end
     end
 
+    def is_cloned_repository
+      Dir.chdir(root_dir) do
+        begin
+          Dir.chdir(repository.split('/')[1]) do
+            run("git status")
+          end
+        rescue => e
+        end
+      end
+    end
+
     def push_release_branch(deploy_branch)
       Dir.chdir(root_dir) do
         Dir.chdir(repository.split('/')[1]) do
